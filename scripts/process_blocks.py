@@ -137,7 +137,7 @@ def combine_parquet_files(input_folder, target_path):
             pq.write_to_dataset(
                 f,
                 root_path=target_path,
-                partition_cols=['COUNTYFP20'])
+                partition_cols=['STATEFP20','COUNTYFP20'])
 
     except Exception as e:
         print(e)
