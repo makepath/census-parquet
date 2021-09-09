@@ -12,11 +12,12 @@ import pandas as pd
 import geopandas as gpd
 import dask_geopandas
 from os import path
+import numpy as np
 
 import os
 import pyarrow.parquet as pq
 
-statelookup = { '01': 'AL', '02': 'AK', '04': 'AZ', '05': 'AR', '06': 'CA', '08': 'CO', '09': 'CT', '10': 'DE', '11': 'DC', '12': 'FL', '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL', '18': 'IN', '19': 'IA', '20': 'KS', '21': 'KY', '22': 'LA', '23': 'ME', '24': 'MD', '25': 'MA', '26': 'MI', '27': 'MN', '28': 'MS', '29': 'MO', '30': 'MT', '31': 'NE', '32': 'NV', '33': 'NH', '34': 'NJ', '35': 'NM', '36': 'NY', '37': 'NC', '38': 'ND', '39': 'OH', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI', '45': 'SC', '46': 'SD', '47': 'TN', '48': 'TX', '49': 'UT', '50': 'VT', '51': 'VA', '53': 'WA', '54': 'WV', '55': 'WI', '56': 'WY', '72': 'PR' }
+statelookup = {'01': 'AL', '02': 'AK', '04': 'AZ', '05': 'AR', '06': 'CA', '08': 'CO', '09': 'CT', '10': 'DE', '11': 'DC', '12': 'FL', '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL', '18': 'IN', '19': 'IA', '20': 'KS', '21': 'KY', '22': 'LA', '23': 'ME', '24': 'MD', '25': 'MA', '26': 'MI', '27': 'MN', '28': 'MS', '29': 'MO', '30': 'MT', '31': 'NE', '32': 'NV', '33': 'NH', '34': 'NJ', '35': 'NM', '36': 'NY', '37': 'NC', '38': 'ND', '39': 'OH', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI', '45': 'SC', '46': 'SD', '47': 'TN', '48': 'TX', '49': 'UT', '50': 'VT', '51': 'VA', '53': 'WA', '54': 'WV', '55': 'WI', '56': 'WY', '72': 'PR'}
 
 
 SUMMARY_TABLE = "./population_stats/2020_PLSummaryFile_FieldNames.xlsx"
@@ -34,11 +35,11 @@ def add_population_stats(filename, gdf):
         return gdf
 
     state_1 = f'./population_stats/{ ABBR.lower() }000012020.pl'
-    state_geo = f'./population_stats/{ ABBR.lower() }geo2020.pl' 
+    state_geo = f'./population_stats/{ ABBR.lower() }geo2020.pl'
 
     if not path.exists(state_1) or not path.exists(state_geo):
         print(f' unable to find {state_1}')
-        gdf['P0010001'] = np.empty(len(gdf), dtype='f8')
+        gdf['P0010001'] = np.zeros(len(gdf), dtype='f8') * np.nan
         gdf['STUSAB'] = ABBR
         return gdf
 
@@ -104,7 +105,7 @@ def load(filename):
 
     # dtype conversions
     gdf['INTPTLON20'] = gdf['INTPTLON20'].astype(float)
-    gdf['INTPTLAT20'] = gdf['INTPTLAT20'].str.replace('+','').astype(float)
+    gdf['INTPTLAT20'] = gdf['INTPTLAT20'].str.replace('+', '').astype(float)
     gdf['STATEFP20'] = gdf['STATEFP20'].astype('category')
     gdf['COUNTYFP20'] = gdf['COUNTYFP20'].astype('category')
     gdf['TRACTCE20'] = gdf['TRACTCE20'].astype('int')
@@ -118,7 +119,7 @@ def load(filename):
     del gdf['FUNCSTAT20']
 
     # write to parquet
-    outputname = path.join('./outputs', path.split(filename)[-1]+'.parquet') 
+    outputname = path.join('./outputs', path.split(filename)[-1]+'.parquet')
     ddf = dask_geopandas.from_geopandas(gdf, npartitions=1)
     ddf.to_parquet(outputname)
     print(f'Finished {outputname}')
