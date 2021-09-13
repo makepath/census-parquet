@@ -27,4 +27,4 @@ echo -e "https://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_all_500k.zip
 \nhttps://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_scsd_500k.zip
 \nhttps://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_unsd_500k.zip
 \nhttps://www2.census.gov/geo/tiger/GENZ2020/shp/cb_2020_us_sldl_500k.zip" >> boundaryurl.txt
-wget -0 census_boundaries/ -i boundaryurl.txt
+wget -P census_boundaries/ -i boundaryurl.txt
