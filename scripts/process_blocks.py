@@ -117,7 +117,6 @@ def load(filename):
     del gdf['UACE20']
     del gdf['UATYPE20']
     del gdf['FUNCSTAT20']
-    del gdf['GEOID']
 
     # write to parquet
     outputname = path.join('./outputs', path.split(filename)[-1]+'.parquet')
