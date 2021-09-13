@@ -94,6 +94,7 @@ def add_population_stats(filename, gdf):
     del updated_gdf['LOGRECNO']
     del updated_gdf['BLOCK']
     del updated_gdf['SUMLEV']
+    del updated_gdf['GEOID']
 
     return updated_gdf
 
