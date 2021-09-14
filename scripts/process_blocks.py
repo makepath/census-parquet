@@ -4,7 +4,7 @@ import dask_geopandas
 import geopandas as gpd
 import glob
 import numpy as np
-import os.path as path
+import os
 import pandas as pd
 import pyarrow.parquet as pq
 
@@ -17,7 +17,7 @@ SUMMARY_TABLE = "./population_stats/2020_PLSummaryFile_FieldNames.xlsx"
 
 def add_population_stats(filename, gdf):
 
-    FIPS = path.split(filename)[-1].split('_')[2]
+    FIPS = os.path.split(filename)[-1].split('_')[2]
     ABBR = statelookup.get(FIPS)
 
     if not ABBR:
@@ -29,7 +29,7 @@ def add_population_stats(filename, gdf):
     state_1 = f'./population_stats/{ ABBR.lower() }000012020.pl'
     state_geo = f'./population_stats/{ ABBR.lower() }geo2020.pl'
 
-    if not path.exists(state_1) or not path.exists(state_geo):
+    if not os.path.exists(state_1) or not os.path.exists(state_geo):
         print(f' unable to find {state_1}')
         gdf['P0010001'] = np.zeros(len(gdf), dtype='f8') * np.nan
         gdf['STUSAB'] = ABBR
@@ -112,7 +112,7 @@ def load(filename):
     del gdf['FUNCSTAT20']
 
     # write to parquet
-    outputname = path.join('./outputs', path.split(filename)[-1]+'.parquet')
+    outputname = os.path.join('./outputs', os.path.split(filename)[-1]+'.parquet')
     ddf = dask_geopandas.from_geopandas(gdf, npartitions=1)
     ddf.to_parquet(outputname)
     print(f'Finished {outputname}')
@@ -124,7 +124,7 @@ def combine_parquet_files(input_folder, target_path):
         files = []
 
         for file_name in os.listdir(input_folder):
-            files.append(pq.read_table(path.join(input_folder, file_name)))
+            files.append(pq.read_table(os.path.join(input_folder, file_name)))
 
         for f in files:
             pq.write_to_dataset(
