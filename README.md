@@ -8,7 +8,7 @@ These tools utilize several dependencies.
 To utilize the data download shell script files install [wget](https://formulae.brew.sh/formula/wget) and [lftp](https://formulae.brew.sh/formula/lftp).
 ```bash
 brew install wget
-brew install lftp                                                                                                                                 
+brew install lftp
 ```
 For the python scripts the following dependencies should be installed:
 ```bash
