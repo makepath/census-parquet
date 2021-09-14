@@ -1,4 +1,3 @@
-
 import dask.bag as bag
 import dask_geopandas
 import geopandas as gpd
@@ -69,7 +68,7 @@ def load_dtype(filename):
         "UNSDLEA": "int",
         "VTDI20": "category",
         "VTDST20": "str",
-}
+    }
     for name, dtype in mapping.items():
         try:
             gdf[name] = gdf[name].astype(dtype, errors="ignore") 
