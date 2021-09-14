@@ -3,7 +3,7 @@ import dask.bag as bag
 import dask_geopandas
 import geopandas as gpd
 import glob
-from os import path
+import os.path as path
 
 def load_dtype(filename):
     print(f'Started {filename}')
