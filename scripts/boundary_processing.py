@@ -3,7 +3,7 @@ import dask.bag as bag
 import dask_geopandas
 import geopandas as gpd
 import glob
-import os.path as path
+import os
 
 def load_dtype(filename):
     print(f'Started {filename}')
@@ -244,7 +244,7 @@ def load_dtype(filename):
         pass
     
     #write to parquet
-    outputname = path.join(path.dirname(filename), 'boundary_outputs', path.splitext(path.split(filename)[-1])[0]+ '.parquet') 
+    outputname = os.path.join(os.path.dirname(filename), 'boundary_outputs', os.path.splitext(os.path.split(filename)[-1])[0]+ '.parquet') 
     ddf = dask_geopandas.from_geopandas(gdf, npartitions=1)
     ddf.to_parquet(outputname)
     print(f'Finished {outputname}')
