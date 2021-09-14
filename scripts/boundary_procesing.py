@@ -261,7 +261,7 @@ def load_dtype(filename):
     return filename
    
 if __name__ == '__main__':
-    files = glob.glob('./cb_2020_us_all_500k/*.zip')
+    files = glob.glob('.census_boundaries/cb_2020_us_all_500k/*.zip')
     print(f'Found {len(files)} files')
     bg = bag.from_sequence(files).map(load_dtype)
     bg.compute()
