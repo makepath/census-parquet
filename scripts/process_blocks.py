@@ -4,8 +4,7 @@ import dask_geopandas
 import geopandas as gpd
 import glob
 import numpy as np
-import os
-from os import path
+import os.path as path
 import pandas as pd
 import pyarrow.parquet as pq
 
@@ -125,7 +124,7 @@ def combine_parquet_files(input_folder, target_path):
         files = []
 
         for file_name in os.listdir(input_folder):
-            files.append(pq.read_table(os.path.join(input_folder, file_name)))
+            files.append(pq.read_table(path.join(input_folder, file_name)))
 
         for f in files:
             pq.write_to_dataset(
