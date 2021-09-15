@@ -9,7 +9,7 @@ setup(
     author='makepath',
     url='https://github.com/makepath/census-parquet',
     install_requires=[
-        'dask',
+        'dask_geopandas',
         'openpyxl',
         'pyarrow',
     ],
