@@ -12,8 +12,9 @@ For the python scripts the following dependencies should be installed:
 2. [dask_geopandas](https://github.com/geopandas/dask-geopandas)
 3. [geopandas](https://geopandas.org/getting_started/install.html)
 4. [numpy](https://numpy.org/install/)
-5. [pandas](https://pandas.pydata.org/docs/getting_started/install.html)
-6. [pyarrow](https://arrow.apache.org/docs/python/install.html)
+5. [openpyxl](https://openpyxl.readthedocs.io/en/stable/#installation)
+6. [pandas](https://pandas.pydata.org/docs/getting_started/install.html)
+7. [pyarrow](https://arrow.apache.org/docs/python/install.html)
 
 ## Usage
 The scripts should be run in the following order.
