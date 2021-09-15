@@ -1,21 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Sep  8 10:35:55 2021
-
-@author: natalieodell
-"""
-
 import dask.bag as bag
-import glob
-import pandas as pd
-import geopandas as gpd
 import dask_geopandas
-from os import path
+import geopandas as gpd
+import glob
 import numpy as np
-
 import os
+import pandas as pd
 import pyarrow.parquet as pq
+
 
 statelookup = {'01': 'AL', '02': 'AK', '04': 'AZ', '05': 'AR', '06': 'CA', '08': 'CO', '09': 'CT', '10': 'DE', '11': 'DC', '12': 'FL', '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL', '18': 'IN', '19': 'IA', '20': 'KS', '21': 'KY', '22': 'LA', '23': 'ME', '24': 'MD', '25': 'MA', '26': 'MI', '27': 'MN', '28': 'MS', '29': 'MO', '30': 'MT', '31': 'NE', '32': 'NV', '33': 'NH', '34': 'NJ', '35': 'NM', '36': 'NY', '37': 'NC', '38': 'ND', '39': 'OH', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI', '45': 'SC', '46': 'SD', '47': 'TN', '48': 'TX', '49': 'UT', '50': 'VT', '51': 'VA', '53': 'WA', '54': 'WV', '55': 'WI', '56': 'WY', '72': 'PR'}
 
@@ -25,7 +16,7 @@ SUMMARY_TABLE = "./population_stats/2020_PLSummaryFile_FieldNames.xlsx"
 
 def add_population_stats(filename, gdf):
 
-    FIPS = path.split(filename)[-1].split('_')[2]
+    FIPS = os.path.split(filename)[-1].split('_')[2]
     ABBR = statelookup.get(FIPS)
 
     if not ABBR:
@@ -37,7 +28,7 @@ def add_population_stats(filename, gdf):
     state_1 = f'./population_stats/{ ABBR.lower() }000012020.pl'
     state_geo = f'./population_stats/{ ABBR.lower() }geo2020.pl'
 
-    if not path.exists(state_1) or not path.exists(state_geo):
+    if not os.path.exists(state_1) or not os.path.exists(state_geo):
         print(f' unable to find {state_1}')
         gdf['P0010001'] = np.zeros(len(gdf), dtype='f8') * np.nan
         gdf['STUSAB'] = ABBR
@@ -94,6 +85,7 @@ def add_population_stats(filename, gdf):
     del updated_gdf['LOGRECNO']
     del updated_gdf['BLOCK']
     del updated_gdf['SUMLEV']
+    del updated_gdf['GEOID']
 
     return updated_gdf
 
@@ -119,7 +111,7 @@ def load(filename):
     del gdf['FUNCSTAT20']
 
     # write to parquet
-    outputname = path.join('./outputs', path.split(filename)[-1]+'.parquet')
+    outputname = os.path.join('./outputs', os.path.split(filename)[-1]+'.parquet')
     ddf = dask_geopandas.from_geopandas(gdf, npartitions=1)
     ddf.to_parquet(outputname)
     print(f'Finished {outputname}')
@@ -137,7 +129,7 @@ def combine_parquet_files(input_folder, target_path):
             pq.write_to_dataset(
                 f,
                 root_path=target_path,
-                partition_cols=['COUNTYFP20'])
+                partition_cols=['STATEFP20','COUNTYFP20'])
 
     except Exception as e:
         print(e)
