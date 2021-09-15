@@ -11,3 +11,4 @@ outputs/
 boundary_outputs/
 census_boundaries/
 TABBLOCK20/
+*.parquet
