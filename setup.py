@@ -12,6 +12,7 @@ setup(
         'console_scripts': ['run_census_parquet=census_parquet.cli:start']
     },
     install_requires=[
+        'Click',
         'dask_geopandas',
         'openpyxl',
         'pyarrow',
