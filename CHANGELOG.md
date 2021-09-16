@@ -1,6 +1,9 @@
 ## Census-Parquet Changelog
 -----------
 
+### Version 0.0.4 - 16 September 2021
+- Use click to run all 5 scripts in order
+
 ### Version 0.0.3 - 15 September 2021
 - Small tweak to setup.py
 

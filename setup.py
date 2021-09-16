@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='census-parquet',
-    version='0.0.3',
+    version='0.0.4',
     packages=['census_parquet'],
     license='MIT',
     description='Tools for generating Parquet files from US Census 2020',
