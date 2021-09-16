@@ -17,4 +17,7 @@ setup(
         'openpyxl',
         'pyarrow',
     ],
+    package_data={
+        'census_parquet': ['*.sh'],
+    },
 )
