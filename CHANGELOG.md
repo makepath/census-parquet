@@ -1,6 +1,9 @@
 ## Census-Parquet Changelog
 -----------
 
+### Version 0.0.5 - 16 September 2021
+- Added .sh to manifest
+
 ### Version 0.0.4 - 16 September 2021
 - Use click to run all 5 scripts in order
 
