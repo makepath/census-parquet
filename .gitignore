@@ -4,6 +4,7 @@
 # Distribution / packaging
 build/
 dist/
+census_parquet.egg-info/
 
 #Outputs and Downloads
 population_stats/
