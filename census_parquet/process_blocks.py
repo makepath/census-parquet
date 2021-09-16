@@ -136,8 +136,12 @@ def combine_parquet_files(input_folder, target_path):
         raise
 
 
-if __name__ == '__main__':
+def main():
     files = glob.glob('./TABBLOCK20/*.zip')
     bg = bag.from_sequence(files).map(load)
     bg.compute()
     combine_parquet_files('./outputs', 'tl_2020_FULL_tabblock20.parquet')
+
+
+if __name__ == '__main__':
+    main()

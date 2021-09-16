@@ -4,10 +4,11 @@ import geopandas as gpd
 import glob
 import os
 
+
 def load_dtype(filename):
     print(f'Started {filename}')
     gdf = gpd.read_file(filename, driver='SHP')
-    
+
     #dtype conversions
     mapping = {
         "AFFGEOID": "str",
@@ -71,21 +72,24 @@ def load_dtype(filename):
     }
     for name, dtype in mapping.items():
         try:
-            gdf[name] = gdf[name].astype(dtype, errors="ignore") 
+            gdf[name] = gdf[name].astype(dtype, errors="ignore")
         except KeyError:
             pass
-    
+
     #write to parquet
-    outputname = os.path.join(os.path.dirname(filename), 'boundary_outputs', os.path.splitext(os.path.split(filename)[-1])[0]+ '.parquet') 
+    outputname = os.path.join(os.path.dirname(filename), 'boundary_outputs', os.path.splitext(os.path.split(filename)[-1])[0]+ '.parquet')
     ddf = dask_geopandas.from_geopandas(gdf, npartitions=1)
     ddf.to_parquet(outputname)
     print(f'Finished {outputname}')
     return filename
-   
-if __name__ == '__main__':
+
+
+def main():
     files = glob.glob('./census_boundaries/*.zip')
     print(f'Found {len(files)} files')
     bg = bag.from_sequence(files).map(load_dtype)
     bg.compute()
-    
 
+
+if __name__ == '__main__':
+    main()
