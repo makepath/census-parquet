@@ -28,8 +28,8 @@ run_census_parquet
 ```
 
 This runs the following scripts in order:
-1. `download_boundaries.sh` - This script downloads the Census Boundary data needed to run boundary_processing.py
+1. `download_boundaries.sh` - This script downloads the Census Boundary data needed to run `process_boundaries.py`
 2. `download_population_stats.sh` - This script downloads population stat data needed for process_blocks.py
 3. `download_blocks.sh` - This script downloads the Census Block data needed to run process_blocks.py
-4. `boundary_processing.py` - This script processes the Census Boundary data and creates parquet files. The parquet files will be output into a `boundary_outputs` folder.
+4. `process_boundaries.py` - This script processes the Census Boundary data and creates parquet files. The parquet files will be output into a `boundary_outputs` folder.
 5. `process_blocks.py` - This script processes Census Block data and creates parquet files. The final combined parquet file will have the name `tl_2020_FULL_tabblock20.parquet`.

@@ -3,7 +3,7 @@ import os
 from subprocess import run
 import sys
 
-from . import boundary_processing, process_blocks
+from . import process_boundaries, process_blocks
 
 
 @click.command()
@@ -21,7 +21,7 @@ def start():
     run(os.path.join(module_path, 'download_blocks.sh'))
 
     click.echo('Stage 4: Process boundaries')
-    boundary_processing.main()
+    process_boundaries.main()
 
     click.echo('Stage 5: Process blocks')
     process_blocks.main()
