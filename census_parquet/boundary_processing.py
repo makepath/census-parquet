@@ -1,95 +1,97 @@
-import dask.bag as bag
-import dask_geopandas
-import geopandas as gpd
-import glob
-import os
+import warnings
+from pathlib import Path
+
+import dask
+import geopandas
+import pandas as pd
 
 
-def load_dtype(filename):
-    print(f'Started {filename}')
-    gdf = gpd.read_file(filename, driver='SHP')
+warnings.filterwarnings("ignore", message=".*initial implementation of Parquet.*")
 
-    #dtype conversions
-    mapping = {
-        "AFFGEOID": "str",
-        "AFFGEOID20": "str",
-        "AIANNHCE": "int",
-        "AIANNHNS": "int",
-        "ALAND": "int",
-        "ALAND20": "int",
-        "AWATER": "int",
-        "AWATER20": "int",
-        "ANRCFP": "int",
-        "ANRCNS": "int",
-        "BLKGRPCE": "category",
-        "CBSAFP": "int",
-        "CD116FP": "int",
-        "CNECTAFP": "category",
-        "CONCTYFP": "int",
-        "CONCTYNS": "int",
-        "COUNTYFP": "category",
-        "COUNTYFP20": "category",
-        "COUSUBFP": "category",
-        "COUSUBNS": "str",
-        "CSAFP": "float",
-        "DIVISIONCE": "int",
-        "ELSDLEA": "int",
-        "GEOID": "str",
-        "GEOID20": "str",
-        "LSAD": "category",
-        "LSAD20": "category",
-        "LSY": "category",
-        "METDIVFP": "int",
-        "NAME": "str",
-        "NAME20": "str",
-        "NAMELSAD": "str",
-        "NAMELSAD20": "str",
-        "NAMELSADCO": "category",
-        "NCTADVFP": "int",
-        "NECTAFP": "int",
-        "PARTFLG": "category",
-        "PLACEFP": "int",
-        "PLACENS": "int",
-        "REGIONCE": "int",
-        "SCSDLEA": "int",
-        "SLDLST": "str",
-        "SLDUST": "str",
-        "STATE_NAME": "category",
-        "STATEFP": "category",
-        "STATEFP20": "category",
-        "STATENS": "int",
-        "STUSPS": "category",
-        "SUBMCDFP": "int",
-        "SUBMCDNS": "int",
-        "TBLKGPCE": "category",
-        "TRACTCE": "int",
-        "TTRACTCE": "category",
-        "TRSUBCE": "int",
-        "TRSUBNS": "int",
-        "UNSDLEA": "int",
-        "VTDI20": "category",
-        "VTDST20": "str",
-    }
-    for name, dtype in mapping.items():
-        try:
-            gdf[name] = gdf[name].astype(dtype, errors="ignore")
-        except KeyError:
-            pass
+DTYPES = {
+    "AFFGEOID": "string",
+    "AFFGEOID20": "string",
+    "AIANNHCE": "int",
+    "AIANNHNS": "int",
+    "ALAND": "int",
+    "ALAND20": "int",
+    "AWATER": "int",
+    "AWATER20": "int",
+    "ANRCFP": "int",
+    "ANRCNS": "int",
+    "BLKGRPCE": "category",
+    "CBSAFP": "int",
+    "CD116FP": "int",
+    "CDSESSN": "int",
+    "CNECTAFP": "category",
+    "CONCTYFP": "int",
+    "CONCTYNS": "int",
+    "COUNTYNS": "string",
+    "COUNTYFP": "category",
+    "COUNTYFP20": "category",
+    "COUSUBFP": "category",
+    "COUSUBNS": "string",
+    # "CSAFP": pd.Int64Dtype(),  # can't astype object -> Int64
+    "DIVISIONCE": "int",
+    "ELSDLEA": "int",
+    "GEOID": "string",
+    "GEOID20": "string",
+    "LSAD": "category",
+    "LSAD20": "category",
+    "LSY": "category",
+    "METDIVFP": "int",
+    "NAME": "string",
+    "NAME20": "string",
+    "NAMELSAD": "string",
+    "NAMELSAD20": "string",
+    "NAMELSADCO": "category",
+    "NCTADVFP": "int",
+    "NECTAFP": "int",
+    "PARTFLG": "category",
+    "PLACEFP": "int",
+    "PLACENS": "int",
+    "REGIONCE": "int",
+    "SCSDLEA": "int",
+    "SLDLST": "string",
+    "SLDUST": "string",
+    "STATE_NAME": "category",
+    "STATEFP": "category",
+    "STATEFP20": "category",
+    "STATENS": "int",
+    "STUSPS": "category",
+    "SUBMCDFP": "int",
+    "SUBMCDNS": "int",
+    "TBLKGPCE": "category",
+    "TRACTCE": "int",
+    "TTRACTCE": "category",
+    "TRSUBCE": "int",
+    "TRSUBNS": "int",
+    "UNSDLEA": "int",
+    "VTDI20": "category",
+    "VTDST20": "string",
+}
 
-    #write to parquet
-    outputname = os.path.join(os.path.dirname(filename), 'boundary_outputs', os.path.splitext(os.path.split(filename)[-1])[0]+ '.parquet')
-    ddf = dask_geopandas.from_geopandas(gdf, npartitions=1)
-    ddf.to_parquet(outputname)
-    print(f'Finished {outputname}')
-    return filename
+
+def process_boundary_file(path: Path) -> Path:
+    print(f"Started {path}")
+    gdf = geopandas.read_file(path, driver="SHP")
+    gdf = gdf.astype({k: DTYPES[k] for k in set(gdf.columns) & set(DTYPES)})
+    if "CSAFP" in gdf.columns:
+        gdf["CSAFP"] = gdf["CSAFP"].astype("float64").astype(pd.Int64Dtype())
+
+    output = Path(path).parent / "boundary_outputs" / path.with_suffix(".parquet").name
+    output.parent.mkdir(parents=True, exist_ok=True)
+    gdf.to_parquet(output, index=False)
+    print(f"Finished {output}")
+    return output
 
 
 def main():
-    files = glob.glob('./census_boundaries/*.zip')
-    print(f'Found {len(files)} files')
-    bg = bag.from_sequence(files).map(load_dtype)
-    bg.compute()
+    files = list(Path("census_boundaries").glob("*.zip"))
+    print(f"Found {len(files)} files")
+    results = [dask.delayed(process_boundary_file)(file) for file in files]
+    dask.compute(results)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
