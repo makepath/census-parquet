@@ -1,6 +1,9 @@
 ## Census-Parquet Changelog
 -----------
 
+### Version 0.0.7 - 20 September 2020
+- Added wget for nation outline
+
 ### Version 0.0.6 - 16 September 2020
 - Ensure shell scripts in both sdist and wheels
 
