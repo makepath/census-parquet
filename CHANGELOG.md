@@ -1,6 +1,9 @@
 ## Census-Parquet Changelog
 -----------
 
+### Version 0.0.6 - 16 September 2020
+- Ensure shell scripts in both sdist and wheels
+
 ### Version 0.0.5 - 16 September 2021
 - Added .sh to manifest
 
