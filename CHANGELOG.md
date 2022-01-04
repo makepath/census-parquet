@@ -1,10 +1,13 @@
 ## Census-Parquet Changelog
 -----------
 
-### Version 0.0.7 - 20 September 2020
+### Version 0.0.8 - 4 January 2022
+- Better use of dask and general code improvements (#3)
+
+### Version 0.0.7 - 20 September 2021
 - Added wget for nation outline
 
-### Version 0.0.6 - 16 September 2020
+### Version 0.0.6 - 16 September 2021
 - Ensure shell scripts in both sdist and wheels
 
 ### Version 0.0.5 - 16 September 2021
