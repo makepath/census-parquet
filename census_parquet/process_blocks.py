@@ -203,6 +203,10 @@ def main():
     print("Computing spatial partitions")
     with ProgressBar():
         geo.calculate_spatial_partitions()
+        
+    geo = geo.drop(columns=['STATEFP','COUNTYFP'])
+    geo = geo.replace([None],0)
+    geo = geo.astype({'HOUSING':'int64','POP':'int64'})
 
     print("finalizing geo files")
     with ProgressBar():
