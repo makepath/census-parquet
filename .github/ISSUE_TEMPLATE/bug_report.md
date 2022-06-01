@@ -1,10 +1,8 @@
----
+
 | name	| about| title|lables|asignees|
 | ----| ---- |------| ------| ------- |
 |Bug report| Create a report to help us improve| | bug
 
-
----
 
 **Describe the bug**
 A clear and concise description of what the bug is.
