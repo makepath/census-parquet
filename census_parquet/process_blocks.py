@@ -207,7 +207,7 @@ def process_pop_geo(file):
         result.to_parquet(output)
     else:
         pop = None
-    return (output, output_pop, output_geo)
+    return output, output_pop, output_geo
 
 
 def main():
@@ -220,8 +220,11 @@ def main():
 
     print("combining geo and pops")
     with ProgressBar():
-        comb_files, pop_files, geo_files  = dask.compute(*combs)
+        outs  = dask.compute(*combs)
     
+    comb_files = [x[0] for x in outs]
+    pop_files = [x[1] for x in outs]
+    geo_files = [x[2] for x in outs]
     pop = dd.concat([dd.read_parquet(f) for f in sorted(pop_files)])
     geo = dd.concat([dask_geopandas.read_parquet(f) for f in sorted(geo_files)])
     assert pop.known_divisions
