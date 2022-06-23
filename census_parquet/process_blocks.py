@@ -212,26 +212,11 @@ def process_pop_geo(file):
 
 def main():
     files = list(Path("TABBLOCK20").glob("*.zip"))
-    #geos = [dask.delayed(process_geo)(file) for file in files]
-    #pops = [
-     #   dask.delayed(process_pop)(file)
-      #  for file in files
-       # if file.stem.split("_")[2] in statelookup
-    #]
-    #assert len(geos)
-    #assert len(pops)
+    
     combs = [dask.delayed(process_pop_geo)(file)
             for file in files
             if file.stem.split("_")[2] in statelookup
     ]
-    print(f"total combined files {len(combs)}")
-    #print("processing geo files")
-    #with ProgressBar():
-     #   geo_files = dask.compute(*geos)
-
-    #print("processing population files")
-    #with ProgressBar():
-     #   pop_files = dask.compute(*pops)
 
     print("combining geo and pops")
     with ProgressBar():
