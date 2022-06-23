@@ -230,7 +230,7 @@ def main():
     comb = dd.concat([dask_geopandas.read_parquet(f) for f in sorted(comb_files)])
 
     Path("outputs").mkdir(exist_ok=True)
-    print("spatial partitioning")
+    print("spatial partitioning combined files")
     with ProgressBar():
         comb.calculate_spatial_partitions()
 
@@ -242,7 +242,7 @@ def main():
     with ProgressBar():
         pop.to_parquet("outputs/census_blocks_population.parquet")
 
-    print("Computing spatial partitions")
+    print("computing spatial partitions for geo files")
     with ProgressBar():
         geo.calculate_spatial_partitions()
 
