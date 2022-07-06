@@ -18,7 +18,6 @@ import dask_geopandas
 from dask.diagnostics import ProgressBar
 import geopandas
 import pandas as pd
-
 warnings.filterwarnings("ignore", message=".*initial implementation of Parquet.*")
 
 
@@ -214,11 +213,8 @@ def main():
     geo_files = [x[2] for x in outs]
     pop = dd.concat([dd.read_parquet(f) for f in sorted(pop_files)])
     geo = dd.concat([dask_geopandas.read_parquet(f) for f in sorted(geo_files)])
-    assert pop.known_divisions
-    assert geo.known_divisions
     
     comb = dd.concat([dask_geopandas.read_parquet(f) for f in sorted(comb_files)])
-    assert comb.known_divisions
 
     Path("outputs").mkdir(exist_ok=True)
     print("spatial partitioning combined files")
@@ -242,13 +238,13 @@ def main():
         geo.to_parquet("outputs/census_blocks_geo.parquet", write_metadata_file=True)
     
     print("validating")
-    a = dd.read_parquet("outputs/census_population.parquet")
+    a = dd.read_parquet("outputs/census_population.parquet", calculate_divisions=True)
     assert a.known_divisions
 
-    b = dask_geopandas.read_parquet("outputs/census_blocks_geo.parquet")
+    b = dask_geopandas.read_parquet("outputs/census_blocks_geo.parquet", calculate_divisions=True)
     assert b.known_divisions
     
-    c = dask_geopandas.read_parquet("outputs/census_blocks_pops.parquet")
+    c = dask_geopandas.read_parquet("outputs/census_blocks_pops.parquet", calculate_divisions=True)
     assert c.known_divisions
     
     print("complete")
