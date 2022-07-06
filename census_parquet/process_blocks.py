@@ -122,14 +122,7 @@ def process_pop(file):
     block_df = block_df.set_index("GEOID").sort_index()
 
     assert block_df.index.is_unique
-    #block_df = dd.from_pandas(block_df, npartitions=1)
-
-    #output = Path(f"tmp/pop/{FIPS}.parquet")
-    #output.parent.mkdir(parents=True, exist_ok=True)
-    #block_df.to_parquet(output)
-
     return block_df   
-# return output
 
 
 def process_geo(file):
@@ -152,14 +145,8 @@ def process_geo(file):
     gdf["INTPTLON"] = pd.to_numeric(gdf["INTPTLON"])
     gdf["INTPTLAT"] = pd.to_numeric(gdf["INTPTLAT"])
     gdf = gdf.replace([None],0)
-    #gdf = dask_geopandas.from_geopandas(gdf, npartitions=1)
-
-    #output = Path(f"tmp/geo/{file.stem.split('_')[2]}.parquet")
-    #output.parent.mkdir(parents=True, exist_ok=True)
-    #gdf.to_parquet(output)
 
     return gdf
-    # return output
 
 
 def process(file):
@@ -231,6 +218,7 @@ def main():
     assert geo.known_divisions
     
     comb = dd.concat([dask_geopandas.read_parquet(f) for f in sorted(comb_files)])
+    assert comb.known_divisions
 
     Path("outputs").mkdir(exist_ok=True)
     print("spatial partitioning combined files")
@@ -239,11 +227,11 @@ def main():
 
     print("finalizing census blocks and population data")
     with ProgressBar():
-        comb.to_parquet("outputs/census_blocks_pops.parquet")
+        comb.to_parquet("outputs/census_blocks_pops.parquet", write_metadata_file=True)
 
     print("finalizing population files")
     with ProgressBar():
-        pop.to_parquet("outputs/census_blocks_population.parquet")
+        pop.to_parquet("outputs/census_population.parquet", write_metadata_file=True)
 
     print("computing spatial partitions for geo files")
     with ProgressBar():
@@ -251,15 +239,19 @@ def main():
 
     print("finalizing geo files")
     with ProgressBar():
-        geo.to_parquet("outputs/census_blocks_geo.parquet")
-
+        geo.to_parquet("outputs/census_blocks_geo.parquet", write_metadata_file=True)
+    
     print("validating")
-    a = dd.read_parquet("outputs/census_blocks_population.parquet")
+    a = dd.read_parquet("outputs/census_population.parquet")
     assert a.known_divisions
 
     b = dask_geopandas.read_parquet("outputs/census_blocks_geo.parquet")
     assert b.known_divisions
-
+    
+    c = dask_geopandas.read_parquet("outputs/census_blocks_pops.parquet")
+    assert c.known_divisions
+    
+    print("complete")
 
 if __name__ == "__main__":
     main()
