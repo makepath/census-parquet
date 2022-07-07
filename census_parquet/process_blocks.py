@@ -195,7 +195,6 @@ def process_pop_geo(file):
         pop = None
     return output, output_pop, output_geo
 
-
 def main():
     files = list(Path("TABBLOCK20").glob("*.zip"))
     
@@ -217,6 +216,10 @@ def main():
     comb = dd.concat([dask_geopandas.read_parquet(f) for f in sorted(comb_files)])
 
     Path("outputs").mkdir(exist_ok=True)
+    print("repartitioning combined files into like sizes")
+    with ProgressBar():
+        comb = comb.repartition(partition_size="20MB")    
+
     print("spatial partitioning combined files")
     with ProgressBar():
         comb.calculate_spatial_partitions()
