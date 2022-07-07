@@ -218,7 +218,7 @@ def main():
     Path("outputs").mkdir(exist_ok=True)
     print("repartitioning combined files into like sizes")
     with ProgressBar():
-        comb = comb.repartition(partition_size="20MB")    
+        comb = comb.repartition(partition_size="10MB")    
 
     print("spatial partitioning combined files")
     with ProgressBar():
