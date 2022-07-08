@@ -1,5 +1,10 @@
 ## Census-Parquet Changelog
 -----------
+### Version 0.0.9 - 8 July 2022
+- Fixing parquet fail at stage 5 (#6)
+- Adding Race/ethnicity columns (#7)
+- Saving outputs to Geoparquet (#8)
+- Balancing partition sizes
 
 ### Version 0.0.8 - 4 January 2022
 - Better use of dask and general code improvements (#3)
