@@ -18,7 +18,6 @@ import dask_geopandas
 from dask.diagnostics import ProgressBar
 import geopandas
 import pandas as pd
-
 warnings.filterwarnings("ignore", message=".*initial implementation of Parquet.*")
 
 
@@ -122,21 +121,17 @@ def process_pop(file):
     block_df = block_df.set_index("GEOID").sort_index()
 
     assert block_df.index.is_unique
-    block_df = dd.from_pandas(block_df, npartitions=1)
-
-    output = Path(f"tmp/pop/{FIPS}.parquet")
-    output.parent.mkdir(parents=True, exist_ok=True)
-    block_df.to_parquet(output)
-
-    return output
+    return block_df   
 
 
 def process_geo(file):
     dtypes = {
-        "STATEFP": "category",
-        "COUNTYFP": "category",
+        "STATEFP": "int",
+        "COUNTYFP": "int",
         "TRACTCE": "int",
         "BLOCKCE": "int",
+        "HOUSING": "int",
+        "POP":    "int"
     }
 
     gdf = (
@@ -148,13 +143,9 @@ def process_geo(file):
     )
     gdf["INTPTLON"] = pd.to_numeric(gdf["INTPTLON"])
     gdf["INTPTLAT"] = pd.to_numeric(gdf["INTPTLAT"])
-    gdf = dask_geopandas.from_geopandas(gdf, npartitions=1)
+    gdf = gdf.replace([None],0)
 
-    output = Path(f"tmp/geo/{file.stem.split('_')[2]}.parquet")
-    output.parent.mkdir(parents=True, exist_ok=True)
-    gdf.to_parquet(output)
-
-    return output
+    return gdf
 
 
 def process(file):
@@ -170,55 +161,96 @@ def process(file):
 
     return file, geo, pop
 
+def process_pop_geo(file):
+    geo = process_geo(file)
+    FIPS = file.stem.split("_")[2]
+    block_ddf = dask_geopandas.from_geopandas(geo, npartitions=1)
+    output_geo = Path(f"tmp/geo/{file.stem.split('_')[2]}.parquet")
+    output_geo.parent.mkdir(parents=True, exist_ok=True)
+    block_ddf.to_parquet(output_geo) 
+    if FIPS in statelookup:
+        pop = process_pop(file)
+        pop_ddf = dd.from_pandas(pop, npartitions=1)
+        output_pop = Path(f"tmp/pop/{FIPS}.parquet")
+        output_pop.parent.mkdir(parents=True, exist_ok=True)
+        pop_ddf.to_parquet(output_pop)
+        result = pd.merge(geo,pop,left_index=True,right_index=True)
+        result = result[['POP',
+			 'P0010003',
+                         'P0010004',
+                         'P0010005',
+                         'P0010006',
+                         'P0010007',
+                         'P0010008',
+                         'P0010009',
+                         'geometry']
+                        ]
+        result = result.to_crs(3857)
+        result = dask_geopandas.from_geopandas(result,npartitions=1)
+        assert len(result) == len(geo)
+        output = Path(f"tmp/comb/{file.stem.split('_')[2]}.parquet")
+        output.parent.mkdir(parents=True,exist_ok=True)
+        result.to_parquet(output)
+    else:
+        pop = None
+    return output, output_pop, output_geo
 
 def main():
     files = list(Path("TABBLOCK20").glob("*.zip"))
-    geos = [dask.delayed(process_geo)(file) for file in files]
-    pops = [
-        dask.delayed(process_pop)(file)
-        for file in files
-        if file.stem.split("_")[2] in statelookup
+    
+    combs = [dask.delayed(process_pop_geo)(file)
+            for file in files
+            if file.stem.split("_")[2] in statelookup
     ]
-    assert len(geos)
-    assert len(pops)
 
-    print("processing geo files")
+    print("combining geo and pops")
     with ProgressBar():
-        geo_files = dask.compute(*geos)
-
-    print("processing population files")
-    with ProgressBar():
-        pop_files = dask.compute(*pops)
-
+        outs  = dask.compute(*combs)
+    
+    comb_files = [x[0] for x in outs]
+    pop_files = [x[1] for x in outs]
+    geo_files = [x[2] for x in outs]
     pop = dd.concat([dd.read_parquet(f) for f in sorted(pop_files)])
     geo = dd.concat([dask_geopandas.read_parquet(f) for f in sorted(geo_files)])
-    assert pop.known_divisions
-    assert geo.known_divisions
+    
+    comb = dd.concat([dask_geopandas.read_parquet(f) for f in sorted(comb_files)])
 
     Path("outputs").mkdir(exist_ok=True)
+    print("repartitioning combined files into like sizes")
+    with ProgressBar():
+        comb = comb.repartition(partition_size="10MB")    
+
+    print("spatial partitioning combined files")
+    with ProgressBar():
+        comb.calculate_spatial_partitions()
+
+    print("finalizing census blocks and population data")
+    with ProgressBar():
+        comb.to_parquet("outputs/census_blocks_pops.parquet", write_metadata_file=True)
+
     print("finalizing population files")
     with ProgressBar():
-        pop.to_parquet("outputs/census_blocks_population.parquet")
+        pop.to_parquet("outputs/census_population.parquet", write_metadata_file=True)
 
-    print("Computing spatial partitions")
+    print("computing spatial partitions for geo files")
     with ProgressBar():
         geo.calculate_spatial_partitions()
-        
-    geo = geo.drop(columns=['STATEFP','COUNTYFP'])
-    geo = geo.replace([None],0)
-    geo = geo.astype({'HOUSING':'int64','POP':'int64'})
 
     print("finalizing geo files")
     with ProgressBar():
-        geo.to_parquet("outputs/census_blocks_geo.parquet")
-
+        geo.to_parquet("outputs/census_blocks_geo.parquet", write_metadata_file=True)
+    
     print("validating")
-    a = dd.read_parquet("outputs/census_blocks_population.parquet")
+    a = dd.read_parquet("outputs/census_population.parquet", calculate_divisions=True)
     assert a.known_divisions
 
-    b = dask_geopandas.read_parquet("outputs/census_blocks_geo.parquet")
+    b = dask_geopandas.read_parquet("outputs/census_blocks_geo.parquet", calculate_divisions=True)
     assert b.known_divisions
-
+    
+    c = dask_geopandas.read_parquet("outputs/census_blocks_pops.parquet", calculate_divisions=True)
+    assert c.known_divisions
+    
+    print("complete")
 
 if __name__ == "__main__":
     main()
