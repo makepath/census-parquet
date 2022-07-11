@@ -3,7 +3,7 @@ import os
 from subprocess import run
 import sys
 
-from . import process_boundaries, process_blocks
+from . import process_boundaries, process_blocks, generate_synthetic_people
 
 
 @click.command()
@@ -25,3 +25,9 @@ def start():
 
     click.echo('Stage 5: Process blocks')
     process_blocks.main()
+
+@click.command()
+def synthetic_people():
+	"""Generate a point for each person within the census data."""
+	click.echo('Generating Synthetic People')
+	generate_synthetic_people.main()
