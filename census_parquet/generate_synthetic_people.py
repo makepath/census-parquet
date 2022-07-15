@@ -66,7 +66,6 @@ def main():
      			 "GEOID": ["00"],
     			 "R":[" "]}
 		).set_index("GEOID")
-    print("Generating Synthetic People")
     with ProgressBar():
         blocks_ddf.map_partitions(polygons_to_points,
 				  meta=meta_df,
