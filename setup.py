@@ -8,7 +8,7 @@ setup(
     author='makepath',
     url='https://github.com/makepath/census-parquet',
     entry_points={
-        'console_scripts': ['run_census_parquet=census_parquet.cli:start', 'run_synthetic_people=census_parquet.cli:generate_synthetic_people']
+        'console_scripts': ['run_census_parquet=census_parquet.cli:start', 'run_synthetic_people=census_parquet.cli:synthetic_people']
     },
     install_requires=[
         'click',
