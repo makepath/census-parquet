@@ -28,6 +28,6 @@ def start():
 
 @click.command()
 def synthetic_people():
-	"""Generate a point for each person within the census data."""
-	click.echo('Generating Synthetic People')
-	generate_synthetic_people.main()
+    """Generate a point for each person within the census data."""
+    click.echo('Generating Synthetic People')
+    generate_synthetic_people.main()
